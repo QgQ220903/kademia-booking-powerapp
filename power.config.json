@@ -1,0 +1,42 @@
+{
+  "appId": "b587ccf7-f79a-43dc-85a5-b3004b1e3053",
+  "appDisplayName": "Meeting Booking App",
+  "description": null,
+  "environmentId": "6061c117-5ce7-e349-abed-5a92416f7d81",
+  "buildPath": "./dist",
+  "buildEntryPoint": "index.html",
+  "logoPath": "Default",
+  "localAppUrl": "http://localhost:3000/",
+  "region": "prod",
+  "connectionReferences": {
+    "b6cfc5a2-80da-4e5a-a0bc-0d981f320e7f": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+      "displayName": "SharePoint",
+      "dataSources": [
+        "meetingrooms",
+        "bookings"
+      ],
+      "dataSets": {
+        "https://3nr4nf.sharepoint.com/sites/MeetingBookingApp": {
+          "dataSources": {
+            "meetingrooms": {
+              "tableName": "1656d1a7-f3fe-4b19-bfbd-e8635045711b"
+            },
+            "bookings": {
+              "tableName": "c8097802-fbfb-4e9f-97a4-48404bb1ecec"
+            }
+          }
+        }
+      }
+    },
+    "c4aa5d43-73a4-45e8-ad9c-523ae2f27239": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_office365users",
+      "displayName": "Office 365 Users",
+      "dataSources": [
+        "office365users"
+      ],
+      "dataSets": {}
+    }
+  },
+  "databaseReferences": {}
+}

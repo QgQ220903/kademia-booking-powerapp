@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO và Meta Tags -->
+  <title>Kademia | Hệ thống đặt phòng hợp nội bộ</title>
+  <meta name="description"
+    content="Hệ thống đặt phòng hợp nội bộ thông minh dành cho công ty Kademia. Quản lý và đặt lịch phòng họp dễ dàng.">
+  <meta name="keywords" content="Kademia, đặt phòng họp, quản lý phòng hợp, booking, nội bộ">
+  <meta name="author" content="Kademia">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/src/assets/favicon.png">
+  <link rel="apple-touch-icon" href="/src/assets/favicon.png">
+
+  <!-- Open Graph Meta Tags (cho social media) -->
+  <meta property="og:title" content="Kademia | Hệ thống đặt phòng hợp nội bộ">
+  <meta property="og:description" content="Hệ thống đặt phòng hợp nội bộ thông minh dành cho công ty Kademia">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="/src/assets/favicon.png">
+
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#4f46e5"> <!-- Màu chủ đạo của Kademia (có thể thay đổi) -->
+
+  <!-- Preconnect để tối ưu hiệu suất -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- CSS Font nếu có -->
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"> -->
+</head>
+
+<body>
+  <!-- Loading Spinner hoặc Splash Screen (tùy chọn) -->
+  <div id="loading" style="display: none;">
+    <!-- Có thể thêm spinner hoặc logo Kademia loading -->
+  </div>
+
+  <!-- Root element cho React App -->
+  <div id="root"></div>
+
+  <!-- Main Script -->
+  <script type="module" src="/src/main.tsx"></script>
+
+  <!-- NoScript fallback -->
+  <noscript>
+    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+      <h2>⚠️ JavaScript Required</h2>
+      <p>Ứng dụng Kademia Booking yêu cầu JavaScript để hoạt động. Vui lòng bật JavaScript trong trình duyệt của bạn.
+      </p>
+      <p>Nếu bạn gặp sự cố, vui lòng liên hệ bộ phận IT của Kademia.</p>
+    </div>
+  </noscript>
+</body>
+
+</html>
