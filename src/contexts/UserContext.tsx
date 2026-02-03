@@ -8,6 +8,7 @@ interface UserContextType {
   user: GraphUser_V1 | null;
   loading: boolean;
   error: string | null;
+  isAdmin: boolean; // THÊM DÒNG NÀY
   refreshUser: () => Promise<void>;
 }
 
@@ -15,6 +16,7 @@ const UserContext = createContext<UserContextType>({
   user: null,
   loading: true,
   error: null,
+  isAdmin: false, // GIÁ TRỊ MẶC ĐỊNH
   refreshUser: async () => {},
 });
 
@@ -22,11 +24,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<GraphUser_V1 | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false); // THÊM DÒNG NÀY
 
   const fetchCurrentUser = async () => {
     try {
       setLoading(true);
       setError(null);
+      setIsAdmin(false); // Reset mỗi lần fetch
 
       // Sử dụng MyProfile_V2 với đầy đủ fields
       const result = await Office365UsersService.MyProfile_V2(
@@ -39,13 +43,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           "pastProjects,responsibilities,schools,skills,preferredName",
       );
 
-      console.log("UserContext - API Response:", result);
-
       if (result.data) {
-        console.log("UserContext - User data received:", result.data);
+        const ADMIN_EMAIL = "QuyQG@kademia.edu.vn";
+        const userEmail = result.data.userPrincipalName || result.data.mail;
         setUser(result.data);
+        if (userEmail === ADMIN_EMAIL) {
+          console.log("User is Admin");
+          setIsAdmin(true);
+        }
       } else {
-        console.log("UserContext - No data received from API");
         setError("Không nhận được dữ liệu từ API");
       }
     } catch (err: any) {
@@ -53,36 +59,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setError(
         `Không thể tải thông tin người dùng: ${err.message || "Lỗi không xác định"}`,
       );
-
-      // Thử fallback với API cũ nếu API mới thất bại
-      try {
-        console.log("Trying fallback to MyProfile (V1)...");
-        const fallbackResult = await Office365UsersService.MyProfile();
-        if (fallbackResult.data) {
-          console.log("Fallback successful, data:", fallbackResult.data);
-          // Convert từ User model sang GraphUser_V1 model
-          const convertedUser: GraphUser_V1 = {
-            id: fallbackResult.data.Id,
-            displayName: fallbackResult.data.DisplayName,
-            givenName: fallbackResult.data.GivenName,
-            surname: fallbackResult.data.Surname,
-            mail: fallbackResult.data.Mail,
-            userPrincipalName: fallbackResult.data.UserPrincipalName,
-            jobTitle: fallbackResult.data.JobTitle,
-            department: fallbackResult.data.Department,
-            companyName: fallbackResult.data.CompanyName,
-            officeLocation: fallbackResult.data.OfficeLocation,
-            mobilePhone:
-              fallbackResult.data.mobilePhone ||
-              fallbackResult.data.TelephoneNumber,
-            businessPhones: fallbackResult.data.BusinessPhones,
-          };
-          setUser(convertedUser);
-          setError(null);
-        }
-      } catch (fallbackErr) {
-        console.error("Fallback also failed:", fallbackErr);
-      }
     } finally {
       setLoading(false);
     }
@@ -97,7 +73,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <UserContext.Provider value={{ user, loading, error, refreshUser }}>
+    <UserContext.Provider
+      value={{ user, loading, error, isAdmin, refreshUser }}
+    >
       {children}
     </UserContext.Provider>
   );

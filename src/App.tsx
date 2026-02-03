@@ -11,6 +11,8 @@ import RoomList from "./components/RoomList";
 import BookingForm from "./components/BookingForm";
 import MyBookings from "./components/MyBooking";
 import UserProfilePage from "./components/UserProfilePage";
+import AdminDashboard from "./pages/AdminDashboard"; // THÊM IMPORT
+import AdminProtectedRoute from "./components/AdminProtectedRoute"; // THÊM IMPORT
 import "./index.css";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
@@ -19,18 +21,25 @@ function App() {
     <ThemeProvider>
       <UserProvider>
         <Router>
-          <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors duration-300">
+          <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900">
             <Header />
-
             <main className="flex-grow">
               <Routes>
-                {/* Thêm redirect từ "/" đến trang RoomList */}
                 <Route path="/" element={<RoomList />} />
                 <Route path="/book" element={<BookingForm />} />
                 <Route path="/my-bookings" element={<MyBookings />} />
                 <Route path="/profile" element={<UserProfilePage />} />
 
-                {/* Nếu vẫn không được, thử thêm redirect chính xác hơn */}
+                {/* ROUTE ADMIN MỚI */}
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminDashboard />
+                    </AdminProtectedRoute>
+                  }
+                />
+
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>

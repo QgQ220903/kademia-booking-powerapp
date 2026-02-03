@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import UserProfile from "./UserProfile";
 import { useTheme } from "../contexts/ThemeContext";
 import { useState } from "react";
-
+import { useUser } from "../contexts/UserContext";
 // Import ảnh logo trực tiếp
 import logoLight from "../assets/logo-light.png";
 import logoDark from "../assets/logo-dark.png";
@@ -19,6 +19,7 @@ import {
   ChevronRight,
   BriefcaseBusiness,
   Building,
+  Shield,
 } from "lucide-react";
 
 const useActiveLink = (path: string) => {
@@ -72,7 +73,7 @@ const NavItem = ({
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
+  const { isAdmin } = useUser();
   // Sử dụng ảnh đã import
   const logoPath = theme === "light" ? logoLight : logoDark;
 
@@ -135,6 +136,12 @@ const Header = () => {
               <NavItem to="/profile" icon={<UserCircle className="w-4 h-4" />}>
                 Thông tin
               </NavItem>
+              {/* Thêm link Quản trị - Chỉ hiện cho Admin */}
+              {isAdmin && (
+                <NavItem to="/admin" icon={<Shield className="w-4 h-4" />}>
+                  Quản trị
+                </NavItem>
+              )}
             </div>
 
             {/* Right Side Actions */}
@@ -255,6 +262,16 @@ const Header = () => {
             >
               Thông tin
             </NavItem>
+            {/* Thêm link Quản trị cho Mobile - Chỉ hiện cho Admin */}
+            {isAdmin && (
+              <NavItem
+                to="/admin"
+                onClick={() => setIsMobileMenuOpen(false)}
+                icon={<Shield className="w-5 h-5" />}
+              >
+                Quản trị
+              </NavItem>
+            )}
           </div>
 
           {/* Mobile Theme Toggle */}
