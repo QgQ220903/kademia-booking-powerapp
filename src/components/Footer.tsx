@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext";
-import { Facebook, Linkedin, Shield, Clock } from "lucide-react";
+import { Facebook, Linkedin, Shield } from "lucide-react";
 
 // Import ảnh logo trực tiếp
 import logoLight from "../assets/logo-light.png";
@@ -81,7 +81,7 @@ const Footer = () => {
               {[
                 { name: "Phòng họp", path: "/" },
                 { name: "Lịch của tôi", path: "/my-bookings" },
-                { name: "Nhân sự", path: "/profile" },
+                { name: "Thông tin", path: "/profile" },
               ].map((item) => (
                 <li key={item.name}>
                   <Link

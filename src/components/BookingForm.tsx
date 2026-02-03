@@ -7,7 +7,6 @@ import {
   Calendar,
   Clock,
   FileText,
-  User,
   Home,
   AlertCircle,
   X,
@@ -137,9 +136,9 @@ const BookingForm: React.FC = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-8xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:px-16">
           {/* Left Column - Form */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-2">
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
               <div className="p-8">
                 {/* Form Header */}
