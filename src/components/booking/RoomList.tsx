@@ -23,8 +23,12 @@ import {
   Calendar as CalendarIcon,
   ChevronDown,
   X,
-  Filter,
   Lock,
+  Zap,
+  Cpu,
+  Headphones,
+  Video,
+  Wifi,
 } from "lucide-react";
 
 const RoomList: React.FC = () => {
@@ -38,7 +42,6 @@ const RoomList: React.FC = () => {
   const [viewMode, setViewMode] = useState<"card" | "calendar">("card");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
   const datePickerRef = useRef<HTMLDivElement>(null);
 
   // Fetch rooms
@@ -178,7 +181,7 @@ const RoomList: React.FC = () => {
   };
 
   const getCapacityLabel = (capacity: number): string => {
-    if (!capacity) return "Không giới hạn";
+    if (!capacity) return "∞";
     if (capacity < 5) return "Nhỏ";
     if (capacity < 10) return "Vừa";
     if (capacity < 20) return "Lớn";
@@ -187,33 +190,33 @@ const RoomList: React.FC = () => {
 
   const getCapacityColor = (capacity: number): string => {
     if (!capacity)
-      return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+      return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300";
     if (capacity < 5)
-      return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+      return "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400";
     if (capacity < 10)
-      return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+      return "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400";
     if (capacity < 20)
-      return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
-    return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+      return "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400";
+    return "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400";
   };
 
   const getRoomCardStyle = (isActive: boolean) => {
     return isActive
-      ? "group border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-sm transition-all flex flex-col"
-      : "group border border-gray-200 dark:border-gray-800 rounded-xl bg-gray-50 dark:bg-gray-900/50 flex flex-col opacity-90";
+      ? "group border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-sm transition-all duration-200 flex flex-col h-full"
+      : "group border border-gray-200 dark:border-gray-800 rounded-xl bg-gray-50 dark:bg-gray-900/50 flex flex-col h-full opacity-90";
   };
 
   const getBookingColor = (booking: Bookings): string => {
     const status = booking.Status?.Value?.toLowerCase();
     switch (status) {
       case "confirmed":
-        return "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 border border-green-200 dark:border-green-800";
+        return "bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-900/20 dark:to-gray-800 border border-emerald-200 dark:border-emerald-800/30";
       case "pending":
-        return "bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800";
+        return "bg-gradient-to-r from-amber-50 to-white dark:from-amber-900/20 dark:to-gray-800 border border-amber-200 dark:border-amber-800/30";
       case "cancelled":
-        return "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300 border border-red-200 dark:border-red-800";
+        return "bg-gradient-to-r from-rose-50 to-white dark:from-rose-900/20 dark:to-gray-800 border border-rose-200 dark:border-rose-800/30";
       default:
-        return "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700";
+        return "bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800 border border-gray-200 dark:border-gray-700";
     }
   };
 
@@ -221,14 +224,44 @@ const RoomList: React.FC = () => {
     const status = booking.Status?.Value?.toLowerCase();
     switch (status) {
       case "confirmed":
-        return <CheckCircle className="w-4 h-4" />;
+        return (
+          <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+        );
       case "pending":
-        return <AlertCircle className="w-4 h-4" />;
+        return (
+          <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+        );
       case "cancelled":
-        return <XCircle className="w-4 h-4" />;
+        return <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />;
       default:
-        return <Calendar className="w-4 h-4" />;
+        return (
+          <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+        );
     }
+  };
+
+  const getEquipmentIcon = (equipment: string) => {
+    const lowerEquipment = equipment.toLowerCase();
+    if (
+      lowerEquipment.includes("máy chiếu") ||
+      lowerEquipment.includes("projector")
+    )
+      return <Monitor className="w-3.5 h-3.5" />;
+    if (
+      lowerEquipment.includes("âm thanh") ||
+      lowerEquipment.includes("headphone")
+    )
+      return <Headphones className="w-3.5 h-3.5" />;
+    if (
+      lowerEquipment.includes("video") ||
+      lowerEquipment.includes("conference")
+    )
+      return <Video className="w-3.5 h-3.5" />;
+    if (lowerEquipment.includes("wifi") || lowerEquipment.includes("internet"))
+      return <Wifi className="w-3.5 h-3.5" />;
+    if (lowerEquipment.includes("pc") || lowerEquipment.includes("máy tính"))
+      return <Cpu className="w-3.5 h-3.5" />;
+    return <Zap className="w-3.5 h-3.5" />;
   };
 
   const filteredRooms = rooms.filter((room) => {
@@ -402,15 +435,6 @@ const RoomList: React.FC = () => {
                   Lịch họp
                 </button>
               </div>
-
-              {/* Quick Stats */}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden inline-flex items-center px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Lọc
-              </button>
             </div>
           </div>
 
@@ -423,57 +447,57 @@ const RoomList: React.FC = () => {
                 placeholder="Tìm kiếm phòng họp, vị trí hoặc thiết bị..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                className="w-full pl-12 pr-4 py-3 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-gray-900 dark:text-white"
               />
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <X className="w-4 h-4" />
                 </button>
               )}
             </div>
 
-            {/* Simple Capacity Filters */}
+            {/* Simple Capacity Filters - Enhanced */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setCapacityFilter("all")}
-                  className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
+                  className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${
                     capacityFilter === "all"
-                      ? "bg-gray-900 dark:bg-gray-800 text-white dark:text-white border-gray-900 dark:border-gray-700"
-                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700"
+                      ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white border-violet-700"
+                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                   }`}
                 >
                   Tất cả ({roomStats.total})
                 </button>
                 <button
                   onClick={() => setCapacityFilter("small")}
-                  className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
+                  className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${
                     capacityFilter === "small"
-                      ? "bg-gray-900 dark:bg-gray-800 text-white dark:text-white border-gray-900 dark:border-gray-700"
-                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700"
+                      ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white border-purple-700"
+                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                   }`}
                 >
                   Nhỏ ({roomStats.small})
                 </button>
                 <button
                   onClick={() => setCapacityFilter("medium")}
-                  className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
+                  className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${
                     capacityFilter === "medium"
-                      ? "bg-gray-900 dark:bg-gray-800 text-white dark:text-white border-gray-900 dark:border-gray-700"
-                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700"
+                      ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-violet-700"
+                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                   }`}
                 >
                   Vừa ({roomStats.medium})
                 </button>
                 <button
                   onClick={() => setCapacityFilter("large")}
-                  className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
+                  className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${
                     capacityFilter === "large"
-                      ? "bg-gray-900 dark:bg-gray-800 text-white dark:text-white border-gray-900 dark:border-gray-700"
-                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700"
+                      ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white border-indigo-700"
+                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                   }`}
                 >
                   Lớn ({roomStats.large})
@@ -494,13 +518,13 @@ const RoomList: React.FC = () => {
             {/* Enhanced Calendar Header */}
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                {/* Date Navigation */}
+                {/* Date Navigation - Enhanced */}
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={() => navigateDate("prev")}
                     className="p-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </button>
 
                   <div className="relative" ref={datePickerRef}>
@@ -509,12 +533,12 @@ const RoomList: React.FC = () => {
                       className="inline-flex items-center justify-between w-full md:w-auto px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
                       <div className="flex items-center">
-                        <CalendarIcon className="w-4 h-4 mr-2 text-gray-500" />
+                        <CalendarIcon className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
                         <span className="font-medium text-gray-900 dark:text-white">
                           {formatDisplayDate(selectedDate)}
                         </span>
                       </div>
-                      <ChevronDown className="w-4 h-4 ml-2 text-gray-500" />
+                      <ChevronDown className="w-4 h-4 ml-2 text-gray-500 dark:text-gray-400" />
                     </button>
 
                     {showDatePicker && (
@@ -527,7 +551,7 @@ const RoomList: React.FC = () => {
                             type="date"
                             value={formatDateForInput(selectedDate)}
                             onChange={handleDateSelect}
-                            className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-violet-500"
+                            className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-transparent text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500 [color-scheme:light] dark:[color-scheme:dark]"
                           />
                         </div>
 
@@ -546,7 +570,7 @@ const RoomList: React.FC = () => {
                                 className={`px-3 py-2 text-xs rounded-lg transition-colors ${
                                   selectedDate.toDateString() ===
                                   option.date.toDateString()
-                                    ? "bg-violet-600 text-white"
+                                    ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white"
                                     : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                                 }`}
                               >
@@ -563,26 +587,26 @@ const RoomList: React.FC = () => {
                     onClick={() => navigateDate("next")}
                     className="p-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </button>
                 </div>
 
                 {/* Enhanced Legend */}
                 <div className="flex flex-wrap gap-3">
                   <div className="flex items-center text-sm">
-                    <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                    <div className="w-3 h-3 rounded-full bg-emerald-500 mr-2"></div>
                     <span className="text-gray-700 dark:text-gray-300">
                       Đã xác nhận
                     </span>
                   </div>
                   <div className="flex items-center text-sm">
-                    <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                    <div className="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
                     <span className="text-gray-700 dark:text-gray-300">
                       Đang chờ
                     </span>
                   </div>
                   <div className="flex items-center text-sm">
-                    <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                    <div className="w-3 h-3 rounded-full bg-rose-500 mr-2"></div>
                     <span className="text-gray-700 dark:text-gray-300">
                       Đã hủy
                     </span>
@@ -596,7 +620,9 @@ const RoomList: React.FC = () => {
                 </div>
               ) : filteredRooms.length === 0 ? (
                 <div className="text-center py-12">
-                  <Calendar className="w-14 h-14 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
+                  <div className="w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Calendar className="w-7 h-7 text-gray-400 dark:text-gray-600" />
+                  </div>
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                     Không tìm thấy phòng phù hợp
                   </h3>
@@ -617,7 +643,7 @@ const RoomList: React.FC = () => {
                         key={room.ID}
                         className={getRoomCardStyle(room.IsActive || false)}
                       >
-                        <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
+                        <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900/50 dark:to-gray-800">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
@@ -631,12 +657,12 @@ const RoomList: React.FC = () => {
                                   )}
                                 </h3>
                                 <span
-                                  className={`px-2.5 py-1 rounded-full text-xs ${getCapacityColor(room.Capacity || 0)}`}
+                                  className={`px-3 py-1.5 rounded-full text-xs font-medium ${getCapacityColor(room.Capacity || 0)}`}
                                 >
                                   {getCapacityLabel(room.Capacity || 0)}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-4 text-sm">
+                              <div className="flex flex-wrap items-center gap-4 text-sm">
                                 <span className="text-gray-600 dark:text-gray-400 flex items-center">
                                   <MapPin className="w-4 h-4 mr-1.5" />
                                   {room.Location}
@@ -650,7 +676,7 @@ const RoomList: React.FC = () => {
                             {room.IsActive ? (
                               <Link
                                 to={`/book?roomId=${room.ID}&roomName=${encodeURIComponent(room.Title || "")}`}
-                                className="inline-flex items-center px-4 py-2 text-sm font-medium bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors"
+                                className="inline-flex items-center px-4 py-2.5 text-sm font-medium bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow"
                               >
                                 Đặt phòng
                               </Link>
@@ -667,10 +693,10 @@ const RoomList: React.FC = () => {
                         </div>
 
                         <div className="p-5">
-                          {/* Equipment badges */}
+                          {/* Equipment badges - Enhanced */}
                           <div className="mb-4">
                             <div className="flex items-center gap-2 mb-3">
-                              <Monitor className="w-5 h-5 text-gray-500" />
+                              <Monitor className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Thiết bị
                               </span>
@@ -679,8 +705,9 @@ const RoomList: React.FC = () => {
                               {equipmentBadges.map((item, index) => (
                                 <span
                                   key={index}
-                                  className="px-3 py-1.5 rounded-lg text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
+                                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs bg-gradient-to-r from-gray-100 to-white dark:from-gray-800 dark:to-gray-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
                                 >
+                                  {getEquipmentIcon(item)}
                                   {item}
                                 </span>
                               ))}
@@ -731,7 +758,7 @@ const RoomList: React.FC = () => {
                                     </div>
                                     <div className="flex items-center gap-2 ml-4">
                                       {getBookingIcon(booking)}
-                                      <span className="text-xs font-medium">
+                                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                                         {booking.Status?.Value || "Pending"}
                                       </span>
                                     </div>
@@ -770,7 +797,7 @@ const RoomList: React.FC = () => {
                 setSearchTerm("");
                 setCapacityFilter("all");
               }}
-              className="inline-flex items-center px-4 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center px-4 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300"
             >
               <X className="w-4 h-4 mr-2" />
               Xóa bộ lọc
@@ -786,7 +813,7 @@ const RoomList: React.FC = () => {
                   key={room.ID}
                   className={getRoomCardStyle(room.IsActive || false)}
                 >
-                  {/* Card Header */}
+                  {/* Card Header - Enhanced */}
                   <div className="p-5 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1 min-w-0">
@@ -810,50 +837,58 @@ const RoomList: React.FC = () => {
                       </div>
                       <div className="flex items-center space-x-2 ml-2">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs ${getCapacityColor(room.Capacity || 0)}`}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium ${getCapacityColor(room.Capacity || 0)}`}
                         >
                           {getCapacityLabel(room.Capacity || 0)}
                         </span>
                         <div
-                          className={`w-2.5 h-2.5 rounded-full ${room.IsActive ? "bg-green-500" : "bg-red-500"}`}
+                          className={`w-3 h-3 rounded-full ${room.IsActive ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`}
                           title={room.IsActive ? "Đang hoạt động" : "Tạm đóng"}
                         ></div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Card Content - Equipment Badges */}
+                  {/* Card Content - Equipment Badges - Enhanced */}
                   <div className="p-5 flex-1 overflow-hidden">
-                    {/* Equipment Badges */}
+                    {/* Equipment Badges - Enhanced */}
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-3">
-                        <Monitor className="w-4 h-4 text-gray-500" />
+                        <Monitor className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                         <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                          Thiết bị
+                          Thiết bị có sẵn
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {equipmentBadges.map((item, index) => (
                           <span
                             key={index}
-                            className="px-2.5 py-1.5 rounded-lg text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
+                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs bg-gradient-to-r from-gray-100 to-white dark:from-gray-800 dark:to-gray-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
                           >
+                            {getEquipmentIcon(item)}
                             {item}
                           </span>
                         ))}
                       </div>
                     </div>
 
-                    {/* Capacity Info */}
+                    {/* Capacity Info - Enhanced */}
                     <div className="flex items-center justify-between text-sm mb-4">
                       <div className="flex items-center text-gray-600 dark:text-gray-500">
-                        <Users className="w-4 h-4 mr-2" />
-                        <span>Sức chứa: {room.Capacity || "∞"} người</span>
+                        <Users className="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {room.Capacity || "∞"} người
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Sức chứa tối đa
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Card Footer */}
+                  {/* Card Footer - Enhanced */}
                   <div className="p-5 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
                     <div className="flex items-center justify-between">
                       <div className="text-xs text-gray-500 dark:text-gray-500">
@@ -862,7 +897,7 @@ const RoomList: React.FC = () => {
                       {room.IsActive ? (
                         <Link
                           to={`/book?roomId=${room.ID}&roomName=${encodeURIComponent(room.Title || "")}`}
-                          className="inline-flex items-center px-4 py-2 text-sm font-medium bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors group-hover:shadow-md"
+                          className="inline-flex items-center px-5 py-2.5 text-sm font-medium bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-lg transition-all duration-200 group-hover:shadow-md shadow-sm"
                         >
                           Đặt phòng
                         </Link>
@@ -889,18 +924,23 @@ const RoomList: React.FC = () => {
             <div className="space-y-1">
               <p className="text-sm text-gray-600 dark:text-gray-500">
                 Hiển thị{" "}
-                <span className="font-medium">{filteredRooms.length}</span>{" "}
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {filteredRooms.length}
+                </span>{" "}
                 trong tổng số{" "}
-                <span className="font-medium">{rooms.length}</span> phòng
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {rooms.length}
+                </span>{" "}
+                phòng
               </p>
               <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                 <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full bg-green-500 mr-1.5"></div>
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></div>
                   <span>{roomStats.available} phòng đang hoạt động</span>
                 </div>
                 <span>•</span>
                 <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full bg-red-500 mr-1.5"></div>
+                  <div className="w-2 h-2 rounded-full bg-rose-500 mr-1.5"></div>
                   <span>
                     {rooms.length - roomStats.available} phòng tạm đóng
                   </span>

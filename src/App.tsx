@@ -8,7 +8,7 @@ import { UserProvider } from "./contexts/UserContext";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import RoomList from "./components/booking/RoomList";
-import BookingForm from "./components/BookingForm";
+import BookingForm from "./components/booking/BookingForm";
 import MyBookings from "./components/MyBooking";
 import UserProfilePage from "./components/UserProfilePage";
 import AdminDashboard from "./pages/AdminDashboard"; // THÊM IMPORT

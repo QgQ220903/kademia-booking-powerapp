@@ -21,6 +21,10 @@ import {
   CalendarDays,
   ChevronRight,
   Home,
+  ChevronLeft,
+  ChevronsLeft,
+  ChevronsRight,
+  MoreHorizontal,
 } from "lucide-react";
 
 const UserProfilePage: React.FC = () => {
@@ -28,7 +32,7 @@ const UserProfilePage: React.FC = () => {
   const { user, loading: userLoading, refreshUser } = useUser();
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [userDetails, setUserDetails] = useState<any>(null);
-  const [recentBookings, setRecentBookings] = useState<any[]>([]);
+  const [allBookings, setAllBookings] = useState<any[]>([]);
   const [stats, setStats] = useState({
     totalBookings: 0,
     upcomingBookings: 0,
@@ -36,6 +40,13 @@ const UserProfilePage: React.FC = () => {
   });
   const [activeTab, setActiveTab] = useState<"profile" | "bookings">("profile");
   const [isLoading, setIsLoading] = useState(true);
+
+  // State cho phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pagedBookings, setPagedBookings] = useState<any[]>([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -92,51 +103,8 @@ const UserProfilePage: React.FC = () => {
 
         setUserDetails(details);
 
-        // Fetch recent bookings
-        const emailForBooking = user?.mail || user?.userPrincipalName;
-        if (emailForBooking) {
-          try {
-            const bookingsResult = await BookingsService.getAll({
-              select: [
-                "ID",
-                "Title",
-                "StartTime",
-                "EndTime",
-                "Status",
-                "MeetingRoom",
-                "BookedBy",
-              ],
-              orderBy: ["StartTime desc"],
-              top: 10,
-            });
-
-            if (bookingsResult.data) {
-              const userBookings = bookingsResult.data.filter((b) => {
-                const bookedByEmail = b.BookedBy?.Email?.toLowerCase();
-                const searchEmail = emailForBooking.toLowerCase();
-                return bookedByEmail === searchEmail;
-              });
-
-              setRecentBookings(userBookings);
-
-              const now = new Date();
-              const upcoming = userBookings.filter(
-                (b) => b.StartTime && new Date(b.StartTime) > now,
-              ).length;
-              const completed = userBookings.filter(
-                (b) => b.StartTime && new Date(b.StartTime) <= now,
-              ).length;
-
-              setStats({
-                totalBookings: userBookings.length,
-                upcomingBookings: upcoming,
-                completedBookings: completed,
-              });
-            }
-          } catch (bookingError) {
-            console.error("Error fetching bookings:", bookingError);
-          }
-        }
+        // Fetch all bookings
+        await fetchAllBookings();
       } catch (error) {
         console.error("Error in fetchUserData:", error);
       } finally {
@@ -150,6 +118,84 @@ const UserProfilePage: React.FC = () => {
       setIsLoading(false);
     }
   }, [user, userLoading]);
+
+  const fetchAllBookings = async () => {
+    setIsLoadingBookings(true);
+    try {
+      const emailForBooking = user?.mail || user?.userPrincipalName;
+      if (!emailForBooking) return;
+
+      const bookingsResult = await BookingsService.getAll({
+        select: [
+          "ID",
+          "Title",
+          "StartTime",
+          "EndTime",
+          "Status",
+          "MeetingRoom",
+          "BookedBy",
+        ],
+        orderBy: ["StartTime desc"],
+      });
+
+      if (bookingsResult.data) {
+        const userBookings = bookingsResult.data.filter((b) => {
+          const bookedByEmail = b.BookedBy?.Email?.toLowerCase();
+          const searchEmail = emailForBooking.toLowerCase();
+          return bookedByEmail === searchEmail;
+        });
+
+        setAllBookings(userBookings);
+
+        const now = new Date();
+        const upcoming = userBookings.filter(
+          (b) => b.StartTime && new Date(b.StartTime) > now,
+        ).length;
+        const completed = userBookings.filter(
+          (b) => b.StartTime && new Date(b.StartTime) <= now,
+        ).length;
+
+        setStats({
+          totalBookings: userBookings.length,
+          upcomingBookings: upcoming,
+          completedBookings: completed,
+        });
+
+        // Tính toán phân trang
+        setTotalPages(Math.ceil(userBookings.length / itemsPerPage));
+        updatePagedBookings(userBookings, 1, itemsPerPage);
+      }
+    } catch (bookingError) {
+      console.error("Error fetching bookings:", bookingError);
+    } finally {
+      setIsLoadingBookings(false);
+    }
+  };
+
+  const updatePagedBookings = (
+    bookings: any[],
+    page: number,
+    perPage: number,
+  ) => {
+    const startIndex = (page - 1) * perPage;
+    const endIndex = startIndex + perPage;
+    const pageItems = bookings.slice(startIndex, endIndex);
+    setPagedBookings(pageItems);
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    updatePagedBookings(allBookings, page, itemsPerPage);
+  };
+
+  const handleItemsPerPageChange = (value: number) => {
+    setItemsPerPage(value);
+    setCurrentPage(1);
+    const total = Math.ceil(allBookings.length / value);
+    setTotalPages(total);
+    updatePagedBookings(allBookings, 1, value);
+  };
 
   const getInitials = (name: string) => {
     if (!name || name === "Không có thông tin") return "U";
@@ -276,6 +322,173 @@ const UserProfilePage: React.FC = () => {
     );
   }
 
+  const renderPagination = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Logic để hiển thị trang có trọng tâm
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, "...", totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(
+          1,
+          "...",
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages,
+        );
+      } else {
+        pages.push(
+          1,
+          "...",
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          "...",
+          totalPages,
+        );
+      }
+    }
+
+    return (
+      <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
+        <div className="flex flex-1 justify-between sm:hidden">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Trước
+          </button>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Sau
+          </button>
+        </div>
+
+        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Hiển thị{" "}
+                <span className="font-medium">
+                  {Math.min(
+                    (currentPage - 1) * itemsPerPage + 1,
+                    allBookings.length,
+                  )}
+                </span>{" "}
+                -{" "}
+                <span className="font-medium">
+                  {Math.min(currentPage * itemsPerPage, allBookings.length)}
+                </span>{" "}
+                của <span className="font-medium">{allBookings.length}</span>{" "}
+                kết quả
+              </p>
+            </div>
+
+            {/* Items per page selector */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Hiển thị:
+              </span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) =>
+                  handleItemsPerPageChange(Number(e.target.value))
+                }
+                className="border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gray-500"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <nav
+              className="inline-flex rounded-md shadow-sm -space-x-px"
+              aria-label="Pagination"
+            >
+              <button
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="sr-only">Đầu trang</span>
+                <ChevronsLeft className="h-4 w-4" />
+              </button>
+
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center px-2 py-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="sr-only">Trang trước</span>
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              {pages.map((page, index) =>
+                page === "..." ? (
+                  <span
+                    key={`dots-${index}`}
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </span>
+                ) : (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page as number)}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
+                      currentPage === page
+                        ? "z-10 bg-gray-900 dark:bg-gray-700 border-gray-900 dark:border-gray-700 text-white"
+                        : "border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ),
+              )}
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="relative inline-flex items-center px-2 py-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="sr-only">Trang sau</span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+
+              <button
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="sr-only">Cuối trang</span>
+                <ChevronsRight className="h-4 w-4" />
+              </button>
+            </nav>
+
+            <div className="ml-3 text-sm text-gray-600 dark:text-gray-400">
+              Trang {currentPage} / {totalPages}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -291,7 +504,10 @@ const UserProfilePage: React.FC = () => {
               </p>
             </div>
             <button
-              onClick={() => refreshUser()}
+              onClick={() => {
+                refreshUser();
+                fetchAllBookings();
+              }}
               className="inline-flex items-center px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
               <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
@@ -533,10 +749,10 @@ const UserProfilePage: React.FC = () => {
                         Lịch sử đặt chỗ
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                        Hiển thị 10 booking gần nhất
+                        Hiển thị {itemsPerPage} booking mỗi trang
                       </p>
                     </div>
-                    {recentBookings.length > 0 && (
+                    {allBookings.length > 0 && (
                       <div className="flex items-center gap-3 text-xs">
                         <div className="flex items-center gap-1.5">
                           <CheckCircle className="w-3 h-3 text-green-500" />
@@ -562,7 +778,14 @@ const UserProfilePage: React.FC = () => {
                 </div>
 
                 <div className="p-5">
-                  {recentBookings.length === 0 ? (
+                  {isLoadingBookings ? (
+                    <div className="text-center py-10">
+                      <div className="w-12 h-12 border-2 border-gray-300 border-t-violet-600 dark:border-gray-700 dark:border-t-violet-500 rounded-full animate-spin mx-auto"></div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
+                        Đang tải danh sách đặt chỗ...
+                      </p>
+                    </div>
+                  ) : allBookings.length === 0 ? (
                     <div className="text-center py-10">
                       <div className="w-16 h-16 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
                         <CalendarDays className="w-8 h-8 text-gray-400 dark:text-gray-500" />
@@ -584,7 +807,7 @@ const UserProfilePage: React.FC = () => {
                   ) : (
                     <>
                       <div className="space-y-3">
-                        {recentBookings.map((booking) => (
+                        {pagedBookings.map((booking) => (
                           <div
                             key={booking.ID}
                             className="p-4 border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
@@ -625,14 +848,14 @@ const UserProfilePage: React.FC = () => {
                           </div>
                         ))}
                       </div>
-                      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+
+                      {/* Pagination */}
+                      {totalPages > 1 && renderPagination()}
+
+                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
                           <div>
-                            Hiển thị{" "}
-                            <span className="font-medium">
-                              {recentBookings.length}
-                            </span>{" "}
-                            trong tổng số{" "}
+                            Tổng số{" "}
                             <span className="font-medium">
                               {stats.totalBookings}
                             </span>{" "}
@@ -646,6 +869,11 @@ const UserProfilePage: React.FC = () => {
                             <span className="flex items-center gap-1.5">
                               <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
                               Hoàn thành: {stats.completedBookings}
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                              <div className="w-1.5 h-1.5 rounded-full bg-gray-500"></div>
+                              Hiển thị: {pagedBookings.length}/
+                              {allBookings.length}
                             </span>
                           </div>
                         </div>

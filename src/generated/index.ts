@@ -7,6 +7,7 @@
 export * as BookingsModel from './models/BookingsModel';
 export * as CommonModels from './models/CommonModels';
 export * as MeetingRoomsModel from './models/MeetingRoomsModel';
+export * as Office365OutlookModel from './models/Office365OutlookModel';
 export * as Office365UsersModel from './models/Office365UsersModel';
 export * as Qgq_bookingsModel from './models/Qgq_bookingsModel';
 export * as Qgq_roomsModel from './models/Qgq_roomsModel';
@@ -15,6 +16,7 @@ export * as SystemusersModel from './models/SystemusersModel';
 // Services
 export * from './services/BookingsService';
 export * from './services/MeetingRoomsService';
+export * from './services/Office365OutlookService';
 export * from './services/Office365UsersService';
 export * from './services/Qgq_bookingsService';
 export * from './services/Qgq_roomsService';
