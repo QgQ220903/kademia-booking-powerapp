@@ -5,6 +5,27 @@
  */
 
 export const dataSourcesInfo = {
+  "qgq_bookings": {
+    "tableId": "",
+    "version": "",
+    "primaryKey": "qgq_bookingid",
+    "dataSourceType": "Dataverse",
+    "apis": {}
+  },
+  "qgq_rooms": {
+    "tableId": "",
+    "version": "",
+    "primaryKey": "qgq_roomid",
+    "dataSourceType": "Dataverse",
+    "apis": {}
+  },
+  "systemusers": {
+    "tableId": "",
+    "version": "",
+    "primaryKey": "systemuserid",
+    "dataSourceType": "Dataverse",
+    "apis": {}
+  },
   "office365users": {
     "tableId": "",
     "version": "",

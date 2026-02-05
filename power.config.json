@@ -38,5 +38,30 @@
       "dataSets": {}
     }
   },
-  "databaseReferences": {}
+  "databaseReferences": {
+    "default.cds": {
+      "state": "Configured",
+      "instanceUrl": "https://org9b1e8fbf.crm5.dynamics.com/",
+      "webApiVersion": "v9.0",
+      "dataSources": {
+        "rooms": {
+          "entitySetName": "qgq_rooms",
+          "logicalName": "qgq_room",
+          "isHidden": false
+        },
+        "bookings": {
+          "entitySetName": "qgq_bookings",
+          "logicalName": "qgq_booking",
+          "isHidden": false
+        },
+        "users": {
+          "entitySetName": "systemusers",
+          "logicalName": "systemuser",
+          "isHidden": false
+        }
+      },
+      "version": "v9.0",
+      "environmentVariableName": ""
+    }
+  }
 }

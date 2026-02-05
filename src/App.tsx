@@ -5,9 +5,9 @@ import {
   Navigate,
 } from "react-router-dom";
 import { UserProvider } from "./contexts/UserContext";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import RoomList from "./components/RoomList";
+import Header from "./components/layout/Header";
+import Footer from "./components/layout/Footer";
+import RoomList from "./components/booking/RoomList";
 import BookingForm from "./components/BookingForm";
 import MyBookings from "./components/MyBooking";
 import UserProfilePage from "./components/UserProfilePage";

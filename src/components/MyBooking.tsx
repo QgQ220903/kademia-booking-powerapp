@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { BookingsService } from "../generated/services/BookingsService";
 import { useUser } from "../contexts/UserContext";
+import {
+  Calendar,
+  Building,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
+  XCircle,
+  CalendarDays,
+  User,
+} from "lucide-react";
 
 const MyBookings: React.FC = () => {
   const [myBookings, setMyBookings] = useState<any[]>([]);
@@ -12,42 +22,56 @@ const MyBookings: React.FC = () => {
     if (!utcString) return { date: "", time: "", fullDate: "" };
     const date = new Date(utcString);
     return {
-      date: date.toLocaleDateString("vi-VN"),
+      date: date.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }),
       time: date.toLocaleTimeString("vi-VN", {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
       }),
       fullDate: date,
-      dayName: date.toLocaleDateString("vi-VN", { weekday: "long" }),
+      dayName: date.toLocaleDateString("vi-VN", { weekday: "short" }),
+      dayFullName: date.toLocaleDateString("vi-VN", { weekday: "long" }),
     };
   };
 
   const getStatusConfig = (status: string) => {
-    const configs: Record<string, { bg: string; text: string; icon: string }> =
-      {
-        Confirmed: {
-          bg: "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800",
-          text: "text-emerald-700 dark:text-emerald-400",
-          icon: "✓",
-        },
-        Pending: {
-          bg: "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800",
-          text: "text-amber-700 dark:text-amber-400",
-          icon: "⏳",
-        },
-        Cancelled: {
+    const statusLower = status?.toLowerCase() || "pending";
+    switch (statusLower) {
+      case "confirmed":
+        return {
+          bg: "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800",
+          text: "text-green-700 dark:text-green-400",
+          icon: <CheckCircle className="w-3.5 h-3.5" />,
+        };
+      case "pending":
+        return {
+          bg: "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800",
+          text: "text-yellow-700 dark:text-yellow-400",
+          icon: <AlertCircle className="w-3.5 h-3.5" />,
+        };
+      case "cancelled":
+        return {
           bg: "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800",
           text: "text-red-700 dark:text-red-400",
-          icon: "✗",
-        },
-        Completed: {
-          bg: "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800",
-          text: "text-blue-700 dark:text-blue-400",
-          icon: "✓",
-        },
-      };
-    return configs[status] || configs.Pending;
+          icon: <XCircle className="w-3.5 h-3.5" />,
+        };
+      case "completed":
+        return {
+          bg: "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700",
+          text: "text-gray-700 dark:text-gray-300",
+          icon: <CheckCircle className="w-3.5 h-3.5" />,
+        };
+      default:
+        return {
+          bg: "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700",
+          text: "text-gray-700 dark:text-gray-300",
+          icon: <AlertCircle className="w-3.5 h-3.5" />,
+        };
+    }
   };
 
   const fetchAllBookings = async (showRefresh = false) => {
@@ -106,68 +130,61 @@ const MyBookings: React.FC = () => {
   const upcomingBookings = getUpcomingBookings();
   const pastBookings = getPastBookings();
 
+  // Loading state đồng nhất với RoomList
+  if (loading) {
+    return (
+      <div className="min-h-screen py-8 bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center justify-center space-y-3 py-12">
+            <div className="relative">
+              <div className="w-12 h-12 border-2 border-gray-300 border-t-violet-600 dark:border-gray-700 dark:border-t-violet-500 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <CalendarDays className="w-5 h-5 text-violet-600 dark:text-violet-400 animate-pulse" />
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Đang tải danh sách đặt phòng...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen py-6 bg-white dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Lịch sử đặt phòng
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Lịch sử đặt phòng
+                </h1>
+                <span className="px-2 py-0.5 rounded-full text-xs bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300">
+                  {myBookings.length} đặt chỗ
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-500">
                 Quản lý và theo dõi các phòng họp bạn đã đặt
               </p>
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700">
-                <span className="font-medium">{myBookings.length}</span> đặt chỗ
-              </div>
               <button
                 onClick={() => fetchAllBookings(true)}
                 disabled={refreshing}
-                className="inline-flex items-center px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 transition-colors disabled:opacity-50"
+                className="inline-flex items-center px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
                 {refreshing ? (
                   <>
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700 dark:text-gray-300"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-violet-600 dark:border-gray-700 dark:border-t-violet-500 rounded-full animate-spin mr-1.5"></div>
                     Đang tải...
                   </>
                 ) : (
                   <>
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                      />
-                    </svg>
+                    <RefreshCw className="w-4 h-4 mr-1.5" />
                     Làm mới
                   </>
                 )}
@@ -177,84 +194,51 @@ const MyBookings: React.FC = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-gray-200 dark:border-slate-700 shadow-sm">
+            {/* Sắp diễn ra */}
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-4">
-                  <svg
-                    className="w-6 h-6 text-blue-600 dark:text-blue-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
+                <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded flex items-center justify-center mr-3">
+                  <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-500">
                     Sắp diễn ra
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
                     {upcomingBookings.length}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-gray-200 dark:border-slate-700 shadow-sm">
+            {/* Đã hoàn thành */}
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mr-4">
-                  <svg
-                    className="w-6 h-6 text-emerald-600 dark:text-emerald-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+                <div className="w-10 h-10 bg-green-50 dark:bg-green-900/20 rounded flex items-center justify-center mr-3">
+                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-500">
                     Đã hoàn thành
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
                     {pastBookings.length}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-gray-200 dark:border-slate-700 shadow-sm">
+            {/* Người đặt */}
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-gray-50 dark:bg-slate-700 rounded-lg flex items-center justify-center mr-4">
-                  <svg
-                    className="w-6 h-6 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
+                <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center mr-3">
+                  <User className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="min-w-0">
+                  <p className="text-sm text-gray-600 dark:text-gray-500">
                     Người đặt
                   </p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                     {user?.displayName || "Khách"}
                   </p>
                 </div>
@@ -264,34 +248,15 @@ const MyBookings: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 border-4 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">
-              Đang tải lịch sử đặt phòng...
-            </p>
-          </div>
-        ) : myBookings.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-24 h-24 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg
-                className="w-12 h-12 text-gray-400 dark:text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
+        {myBookings.length === 0 ? (
+          <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-8 text-center">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CalendarDays className="w-8 h-8 text-gray-400 dark:text-gray-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               Chưa có đặt phòng nào
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto mb-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Bạn chưa đặt phòng họp nào. Hãy bắt đầu đặt phòng để quản lý lịch
               họp của bạn.
             </p>
@@ -302,10 +267,10 @@ const MyBookings: React.FC = () => {
             {upcomingBookings.length > 0 && (
               <div>
                 <div className="flex items-center mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-white">
                     Sắp diễn ra
                   </h2>
-                  <span className="ml-2 px-2.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 rounded-full">
+                  <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full">
                     {upcomingBookings.length}
                   </span>
                 </div>
@@ -320,59 +285,53 @@ const MyBookings: React.FC = () => {
                     return (
                       <div
                         key={booking.ID}
-                        className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden hover:shadow-md dark:hover:shadow-slate-900/50 transition-shadow duration-200"
+                        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
                       >
-                        <div className="p-6">
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                        <div className="p-4">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-gray-900 dark:text-white mb-1 truncate">
                                 {booking.Title}
                               </h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                              <p className="text-sm text-gray-600 dark:text-gray-500 line-clamp-1">
                                 {booking.Description || "Không có mô tả"}
                               </p>
                             </div>
-                            <span
-                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${statusConfig.bg} ${statusConfig.text}`}
-                            >
-                              <span className="mr-1">{statusConfig.icon}</span>
-                              {booking.Status?.Value || "Pending"}
-                            </span>
+                            <div className="ml-2">
+                              <span
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium border ${statusConfig.bg} ${statusConfig.text}`}
+                              >
+                                {statusConfig.icon}
+                                <span>
+                                  {booking.Status?.Value || "Pending"}
+                                </span>
+                              </span>
+                            </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="grid grid-cols-2 gap-3 mb-3">
                             <div>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                              <p className="text-xs text-gray-500 dark:text-gray-500 mb-1">
                                 Ngày
                               </p>
-                              <p className="font-medium text-gray-900 dark:text-white">
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">
                                 {start.date}
                               </p>
                             </div>
                             <div>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                              <p className="text-xs text-gray-500 dark:text-gray-500 mb-1">
                                 Thời gian
                               </p>
-                              <p className="font-medium text-gray-900 dark:text-white">
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">
                                 {start.time} - {end.time}
                               </p>
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-slate-700">
+                          <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
                             <div className="flex items-center">
-                              <div className="w-8 h-8 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mr-2">
-                                <svg
-                                  className="w-4 h-4 text-gray-600 dark:text-gray-400"
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
+                              <div className="w-7 h-7 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center mr-2">
+                                <Building className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                               </div>
                               <span className="text-sm text-gray-700 dark:text-gray-300">
                                 {booking.MeetingRoom?.Value || "Không xác định"}
@@ -391,36 +350,36 @@ const MyBookings: React.FC = () => {
             {pastBookings.length > 0 && (
               <div>
                 <div className="flex items-center mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-white">
                     Đã hoàn thành
                   </h2>
-                  <span className="ml-2 px-2.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-300 rounded-full">
+                  <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full">
                     {pastBookings.length}
                   </span>
                 </div>
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className="border-b border-gray-200 dark:border-slate-700">
-                          <th className="text-left py-3 px-6 text-sm font-medium text-gray-500 dark:text-gray-400">
+                        <tr className="border-b border-gray-200 dark:border-gray-700">
+                          <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                             Tiêu đề
                           </th>
-                          <th className="text-left py-3 px-6 text-sm font-medium text-gray-500 dark:text-gray-400">
+                          <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                             Phòng
                           </th>
-                          <th className="text-left py-3 px-6 text-sm font-medium text-gray-500 dark:text-gray-400">
+                          <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                             Ngày
                           </th>
-                          <th className="text-left py-3 px-6 text-sm font-medium text-gray-500 dark:text-gray-400">
+                          <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                             Thời gian
                           </th>
-                          <th className="text-left py-3 px-6 text-sm font-medium text-gray-500 dark:text-gray-400">
+                          <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                             Trạng thái
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+                      <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                         {pastBookings.map((booking) => {
                           const start = formatDateTime(booking.StartTime);
                           const end = formatDateTime(booking.EndTime);
@@ -431,62 +390,52 @@ const MyBookings: React.FC = () => {
                           return (
                             <tr
                               key={booking.ID}
-                              className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                              className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                             >
-                              <td className="py-4 px-6">
-                                <div>
-                                  <p className="font-medium text-gray-900 dark:text-white">
+                              <td className="py-3 px-4">
+                                <div className="min-w-0">
+                                  <p className="font-medium text-gray-900 dark:text-white truncate max-w-[200px]">
                                     {booking.Title}
                                   </p>
-                                  <p className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
+                                  <p className="text-xs text-gray-500 dark:text-gray-500 truncate max-w-[200px]">
                                     {booking.Description || "Không có mô tả"}
                                   </p>
                                 </div>
                               </td>
-                              <td className="py-4 px-6">
+                              <td className="py-3 px-4">
                                 <div className="flex items-center">
-                                  <div className="w-8 h-8 bg-gray-100 dark:bg-slate-700 rounded flex items-center justify-center mr-2">
-                                    <svg
-                                      className="w-4 h-4 text-gray-600 dark:text-gray-400"
-                                      fill="currentColor"
-                                      viewBox="0 0 20 20"
-                                    >
-                                      <path
-                                        fillRule="evenodd"
-                                        d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z"
-                                        clipRule="evenodd"
-                                      />
-                                    </svg>
+                                  <div className="w-7 h-7 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center mr-2">
+                                    <Building className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                                   </div>
-                                  <span className="text-gray-700 dark:text-gray-300">
+                                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[120px]">
                                     {booking.MeetingRoom?.Value ||
                                       "Không xác định"}
                                   </span>
                                 </div>
                               </td>
-                              <td className="py-4 px-6">
+                              <td className="py-3 px-4">
                                 <div>
-                                  <p className="text-gray-700 dark:text-gray-300">
+                                  <p className="text-sm text-gray-700 dark:text-gray-300">
                                     {start.date}
                                   </p>
-                                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                                  <p className="text-xs text-gray-500 dark:text-gray-500">
                                     {start.dayName}
                                   </p>
                                 </div>
                               </td>
-                              <td className="py-4 px-6">
-                                <p className="text-gray-700 dark:text-gray-300">
+                              <td className="py-3 px-4">
+                                <p className="text-sm text-gray-700 dark:text-gray-300">
                                   {start.time} - {end.time}
                                 </p>
                               </td>
-                              <td className="py-4 px-6">
+                              <td className="py-3 px-4">
                                 <span
-                                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.text}`}
+                                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium border ${statusConfig.bg} ${statusConfig.text}`}
                                 >
-                                  <span className="mr-1">
-                                    {statusConfig.icon}
+                                  {statusConfig.icon}
+                                  <span>
+                                    {booking.Status?.Value || "Completed"}
                                   </span>
-                                  {booking.Status?.Value || "Completed"}
                                 </span>
                               </td>
                             </tr>
@@ -500,6 +449,19 @@ const MyBookings: React.FC = () => {
             )}
           </div>
         )}
+
+        {/* Footer Note */}
+        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <p className="text-sm text-gray-600 dark:text-gray-500">
+              Hiển thị <span className="font-medium">{myBookings.length}</span>{" "}
+              đặt chỗ
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-500">
+              Cần hỗ trợ? Liên hệ bộ phận Hành chính văn phòng
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
